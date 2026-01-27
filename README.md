@@ -307,7 +307,7 @@ ovenLivekit.getUserMedia().then(function () {
     const connectionConfig = {
         iceServers : null ,
         iceTransportPolicy: null,
-        maxBitrate: null
+        maxVideoBitrate: null
     }
 
     // Got media stream from user device and start to stream to OvenMedieEngeine

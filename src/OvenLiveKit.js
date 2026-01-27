@@ -1,6 +1,6 @@
 const OvenLiveKit = {};
 
-const version = '1.5.1';
+const version = '1.5.2';
 const logHeader = 'OvenLiveKit.js :';
 const logEventHeader = 'OvenLiveKit.js ====';
 
@@ -110,7 +110,8 @@ async function getStreamForDeviceCheck(type) {
   };
 
   if (type === 'both') {
-    constraints.audio = true;
+    console.warn('disable audio for device check to avoid getUserMedia failure');
+    // constraints.audio = true;
     constraints.video = true;
   } else if (type === 'audio') {
     constraints.audio = true;
@@ -118,7 +119,9 @@ async function getStreamForDeviceCheck(type) {
     constraints.video = true;
   }
 
-  return await navigator.mediaDevices.getUserMedia(constraints);
+  const permissionStream = await navigator.mediaDevices.getUserMedia(constraints);
+  permissionStream.getTracks().forEach(track => track.stop());
+  await new Promise(resolve => setTimeout(resolve, 500));
 }
 
 async function getDevices() {
@@ -230,7 +233,7 @@ function addMethod(instance) {
         console.info(logHeader, 'Received Media Stream From Input Device', stream);
 
         stream.getVideoTracks().forEach(function (track) {
-          console.info(logHeader, 'Video Track from input stream', track.getSettings());
+          console.info(logHeader, 'Video Track Settings From Input Stream', track.getSettings());
         });
 
         instance.inputStream = stream;
@@ -506,7 +509,9 @@ function addMethod(instance) {
 
       if (track.kind === 'video' && simulcastConfig && simulcastConfig.length > 0) {
 
-        transceiverConfig.sendEncodings = [];
+        if (!transceiverConfig.sendEncodings) {
+          transceiverConfig.sendEncodings = [];
+        }
 
         for (let i = 0; i < simulcastConfig.length; i++) {
 
@@ -520,6 +525,19 @@ function addMethod(instance) {
 
           transceiverConfig.sendEncodings.push(layer);
         }
+      }
+
+      if (track.kind === 'video' && instance.connectionConfig.maxVideoBitrate) {
+
+        if (!transceiverConfig.sendEncodings) {
+          transceiverConfig.sendEncodings = [];
+        }
+
+        transceiverConfig.sendEncodings.push({
+          maxBitrate: instance.connectionConfig.maxVideoBitrate * 1000,
+        });
+
+        console.log(logHeader, `Setting max bitrate to: ${instance.connectionConfig.maxVideoBitrate} kbps`);
       }
 
       peerConnection.addTransceiver(track, transceiverConfig);
@@ -561,12 +579,6 @@ function addMethod(instance) {
 
     const offer = await peerConnection.createOffer();
     console.log(logHeader, 'Offer SDP: ', offer.sdp);
-
-    if (instance.connectionConfig.maxVideoBitrate) {
-
-      // if bandwidth limit is set. modify sdp from ome to limit acceptable bandwidth of ome
-      offer.sdp = setBitrateLimit(offer.sdp, 'video', instance.connectionConfig.maxVideoBitrate);
-    }
 
     if (instance.connectionConfig.sdp && instance.connectionConfig.sdp.appendFmtp) {
 

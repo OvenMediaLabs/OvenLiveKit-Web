@@ -1,6 +1,6 @@
 const OvenLiveKit = {};
 
-const version = '1.5.2';
+const version = '1.5.3';
 const logHeader = 'OvenLiveKit.js :';
 const logEventHeader = 'OvenLiveKit.js ====';
 
@@ -581,7 +581,6 @@ function addMethod(instance) {
     console.log(logHeader, 'Offer SDP: ', offer.sdp);
 
     if (instance.connectionConfig.sdp && instance.connectionConfig.sdp.appendFmtp) {
-
       offer.sdp = appendFmtp(offer.sdp);
     }
 
@@ -662,8 +661,68 @@ function addMethod(instance) {
     const baseUrl = new URL(endpointUrl).origin;
     instance.resourceUrl = baseUrl + fetched.headers.get("location");
 
+    if (fetched.headers.get("Link")) {
+      console.log(logHeader, 'Link Header Found. Update ');
+
+      const links = fetched.headers.get("Link").split(',').map(link => link.trim());
+      const iceServers = [];
+
+      links.forEach(link => {
+
+        // <turn:119.196.229.2:3478?transport=tcp>; rel="ice-server"; username="user"; credential="cred"; credential-type="password"
+        console.log(logHeader, 'Link: ', link);
+        const urlsMatch = link.match(/<([^>]+)>/);
+        const relMatch = link.match(/rel="([^"]+)"/);
+        const usernameMatch = link.match(/username="([^"]+)"/);
+        const credentialMatch = link.match(/credential="([^"]+)"/);
+        const credentialTypeMatch = link.match(/credential-type="([^"]+)"/);
+
+        if (urlsMatch && relMatch && relMatch[1] === 'ice-server') {
+
+          const iceServer = {
+            urls: urlsMatch[1]
+          };
+
+          if (usernameMatch) {
+            iceServer.username = usernameMatch[1];
+          };
+
+          if (credentialMatch) {
+            iceServer.credential = credentialMatch[1];
+          };
+
+          if (credentialTypeMatch) {
+            iceServer.credentialType = credentialTypeMatch[1];
+          }
+
+          iceServers.push(iceServer);
+        }
+      });
+
+      console.log(logHeader, 'Parsed ICE Servers from Link header: ', iceServers);
+
+      // update peer connection with new ice servers
+      if (iceServers.length > 0) {
+        const pcConfig = peerConnection.getConfiguration();
+
+        // only update ice servers when local config does not have ice servers.
+        if (!instance.connectionConfig.iceServers) {
+          pcConfig.iceServers = iceServers;
+          console.log(logHeader, 'Updated Peer Connection ICE Servers from Link header');
+        }
+
+        // set ice transport policy to relay if not set in local config.
+        if (!instance.connectionConfig.iceTransportPolicy) {
+          pcConfig.iceTransportPolicy = 'relay';
+          console.log(logHeader, 'Set Peer Connection iceTransportPolicy to relay');
+        }
+
+        peerConnection.setConfiguration(pcConfig);
+      }
+    }
+
     const answer = await fetched.text();
-    console.log(logHeader, 'Answer SDP: ', answer);
+    console.log(logHeader, 'Response Answer SDP: ', answer);
 
     try {
       await peerConnection.setLocalDescription(offer);

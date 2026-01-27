@@ -110,8 +110,7 @@ async function getStreamForDeviceCheck(type) {
   };
 
   if (type === 'both') {
-    console.warn('disable audio for device check to avoid getUserMedia failure');
-    // constraints.audio = true;
+    constraints.audio = true;
     constraints.video = true;
   } else if (type === 'audio') {
     constraints.audio = true;
@@ -122,6 +121,8 @@ async function getStreamForDeviceCheck(type) {
   const permissionStream = await navigator.mediaDevices.getUserMedia(constraints);
   permissionStream.getTracks().forEach(track => track.stop());
   await new Promise(resolve => setTimeout(resolve, 500));
+
+  return true;
 }
 
 async function getDevices() {
@@ -1259,7 +1260,7 @@ OvenLiveKit.getDevices = async function (type = 'both') {
     await getStreamForDeviceCheck(type);
   } catch (e) {
 
-    console.warn(logHeader, 'Can not find Video and Audio devices', e);
+    console.warn(logHeader, 'Can not find Video and Audio devices.', e);
 
     let videoFound = null;
     let audioFound = null;
@@ -1267,13 +1268,13 @@ OvenLiveKit.getDevices = async function (type = 'both') {
     try {
       videoFound = await getStreamForDeviceCheck('video');
     } catch (e) {
-      console.warn(logHeader, 'Can not find Video devices', e);
+      console.warn(logHeader, 'Can not find Video devices.', e);
     }
 
     try {
       audioFound = await getStreamForDeviceCheck('audio');
     } catch (e) {
-      console.warn(logHeader, 'Can not find Audio devices', e);
+      console.warn(logHeader, 'Can not find Audio devices.', e);
     }
 
     if (!videoFound && !audioFound) {

@@ -1,6 +1,6 @@
 const OvenLiveKit = {};
 
-const version = '1.5.3';
+const version = '1.5.4';
 const logHeader = 'OvenLiveKit.js :';
 const logEventHeader = 'OvenLiveKit.js ====';
 
@@ -657,10 +657,14 @@ function addMethod(instance) {
 
     // update endpointUrl
     instance.endpointUrl = fetched.url;
-    console.log(logHeader, 'Updated endpointUrl: ', instance.endpointUrl);
+    console.log(logHeader, 'Endpoint Url: ', instance.endpointUrl);
 
-    const baseUrl = new URL(endpointUrl).origin;
-    instance.resourceUrl = baseUrl + fetched.headers.get("location");
+    const locationHeaderValue = fetched.headers.get("location");
+    console.log(logHeader, 'Location header ', locationHeaderValue);
+
+    instance.resourceUrl = new URL(locationHeaderValue, fetched.url).toString();
+    console.log(logHeader, 'Resource URL: ', instance.resourceUrl);
+
 
     if (fetched.headers.get("Link")) {
       console.log(logHeader, 'Link Header Found. Update ');

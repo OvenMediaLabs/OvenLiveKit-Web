@@ -1,6 +1,6 @@
 const OvenLiveKit = {};
 
-const version = '1.5.4';
+const version = '1.5.5';
 const logHeader = 'OvenLiveKit.js :';
 const logEventHeader = 'OvenLiveKit.js ====';
 
@@ -388,6 +388,13 @@ function addMethod(instance) {
     return newLines.join('\r\n')
   }
 
+  function normalizeFrameRate(frameRate) {
+    if (Number.isInteger(frameRate)) {
+      return frameRate;
+    }
+    return parseFloat(frameRate).toFixed(2);
+  }
+
   function initWebSocket(endpointUrl) {
 
     if (!endpointUrl) {
@@ -612,10 +619,11 @@ function addMethod(instance) {
 
           const width = settings.width;
           const height = settings.height;
+          const framerate = settings.frameRate;
 
           if (typeof width === 'number' && typeof height === 'number') {
-            console.log(logHeader, `Setting Oven-Capabilities header: max_width=${width}, max_height=${height}`);
-            headers['Oven-Capabilities'] = `max_width=${width}, max_height=${height}`;
+            console.log(logHeader, `Setting Oven-Capabilities header: max_width=${width}, max_height=${height}, max_fps=${normalizeFrameRate(framerate)}`);
+            headers['Oven-Capabilities'] = `max_width=${width}, max_height=${height}, max_fps=${normalizeFrameRate(framerate)}`;
           }
         }
       } else {

@@ -1,10 +1,28 @@
 const OvenLiveKit = {};
 
-const version = '1.5.5';
+const version = '1.5.6';
 const logHeader = 'OvenLiveKit.js :';
 const logEventHeader = 'OvenLiveKit.js ====';
 
 // private methods
+function getTransportQuery(endpointUrl) {
+
+  try {
+    const url = new URL(endpointUrl);
+    const transport = url.searchParams.get('transport');
+
+    if (transport === null) {
+      return undefined;
+    }
+
+    const normalized = transport.toLowerCase();
+
+    return normalized;
+  } catch (e) {
+    return undefined;
+  }
+}
+
 function sendMessage(webSocket, message) {
 
   if (webSocket) {
@@ -678,11 +696,13 @@ function addMethod(instance) {
       console.log(logHeader, 'Link Header Found. Update ');
 
       const links = fetched.headers.get("Link").split(',').map(link => link.trim());
-      const iceServers = [];
+
+      // OvenMediaEngine returns turn servers in Link header with rel="ice-server".
+      // For example: <turn:119.196.229.2:3478?transport=tcp>; rel="ice-server"; username="user"; credential="cred"; credential-type="password"
+      const turnIceServers = [];
 
       links.forEach(link => {
 
-        // <turn:119.196.229.2:3478?transport=tcp>; rel="ice-server"; username="user"; credential="cred"; credential-type="password"
         console.log(logHeader, 'Link: ', link);
         const urlsMatch = link.match(/<([^>]+)>/);
         const relMatch = link.match(/rel="([^"]+)"/);
@@ -708,26 +728,32 @@ function addMethod(instance) {
             iceServer.credentialType = credentialTypeMatch[1];
           }
 
-          iceServers.push(iceServer);
+          turnIceServers.push(iceServer);
         }
       });
 
-      console.log(logHeader, 'Parsed ICE Servers from Link header: ', iceServers);
+      console.log(logHeader, 'Parsed ICE Servers from Link header: ', turnIceServers);
 
-      // update peer connection with new ice servers
-      if (iceServers.length > 0) {
+      // update peer connection with new turn servers from OME.
+      if (turnIceServers.length > 0) {
         const pcConfig = peerConnection.getConfiguration();
 
         // only update ice servers when local config does not have ice servers.
         if (!instance.connectionConfig.iceServers) {
-          pcConfig.iceServers = iceServers;
+          pcConfig.iceServers = turnIceServers;
           console.log(logHeader, 'Updated Peer Connection ICE Servers from Link header');
         }
 
         // set ice transport policy to relay if not set in local config.
         if (!instance.connectionConfig.iceTransportPolicy) {
-          pcConfig.iceTransportPolicy = 'relay';
-          console.log(logHeader, 'Set Peer Connection iceTransportPolicy to relay');
+
+          if (getTransportQuery(instance.endpointUrl) == 'all') {
+            pcConfig.iceTransportPolicy = 'all';
+            console.log(logHeader, 'Set Peer Connection iceTransportPolicy to all');
+          } else {
+            pcConfig.iceTransportPolicy = 'relay';
+            console.log(logHeader, 'Set Peer Connection iceTransportPolicy to relay');
+          }
         }
 
         peerConnection.setConfiguration(pcConfig);
@@ -870,7 +896,7 @@ function addMethod(instance) {
 
     if (instance.connectionConfig.iceServers) {
 
-      // first priority using ice servers from local config.
+      // first priority using ice servers from user config.
       peerConnectionConfig.iceServers = instance.connectionConfig.iceServers;
 
       if (instance.connectionConfig.iceTransportPolicy) {
@@ -926,14 +952,13 @@ function addMethod(instance) {
 
         peerConnectionConfig.iceTransportPolicy = instance.connectionConfig.iceTransportPolicy;
       } else {
-        peerConnectionConfig.iceTransportPolicy = 'relay';
-      }
-    } else {
-      // last priority using default ice servers.
-
-      if (instance.connectionConfig.iceTransportPolicy) {
-
-        peerConnectionConfig.iceTransportPolicy = instance.connectionConfig.iceTransportPolicy;
+        if (getTransportQuery(instance.endpointUrl) == 'all') {
+          peerConnectionConfig.iceTransportPolicy = 'all';
+          console.log(logHeader, 'Set Peer Connection iceTransportPolicy to all');
+        } else {
+          peerConnectionConfig.iceTransportPolicy = 'relay';
+          console.log(logHeader, 'Set Peer Connection iceTransportPolicy to relay');
+        }
       }
     }
 

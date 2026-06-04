@@ -11,7 +11,7 @@ OvenSpace is a sub-second latency streaming demo service using [OvenMediaEngine]
 ## Features
 * Support WebRTC-HTTP ingestion protocol (WHIP) -Since 1.3.0
 * Streaming to OvenMediaEngine's WebRTC Provider.
-	* Implement [OvenMediaEngine's signaling protocol](https://airensoft.gitbook.io/ovenmediaengine/live-source/webrtc-beta#custom-webrtc-producer)
+	* Implement [OvenMediaEngine's signaling protocol](https://airensoft.gitbook.io/ovenmediaengine/live-source/webrtc#custom-webrtc-producer)
 * Built-in Device, Screen Capture.
 * Set the Quality of the Input Stream.
 
@@ -316,7 +316,7 @@ ovenLivekit.getUserMedia().then(function () {
 ```
 #### `instance.startStreaming(connectionUrl, connectionConfig)`
 - parameters
-    - connectionUrl: The connection URL to OvenMediaEngine is explained [here](https://airensoft.gitbook.io/ovenmediaengine/live-source/webrtc-beta#url-pattern).
+    - connectionUrl: The connection URL to OvenMediaEngine is explained [here](https://airensoft.gitbook.io/ovenmediaengine/live-source/webrtc#url-pattern).
     - connectionConfig: See [ConnectionConfig](#) details next.
 - When this API is called, the media stream starts to be streamed according to OvenMediaEngine's signaling protocol.
 

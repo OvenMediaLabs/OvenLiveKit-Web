@@ -1,17 +1,17 @@
 # OvenLiveKit for Web
 
 ## What is OvenLiveKit for Web?
-OvenLiveKit for Web is a JavaScript-based Live Streaming Encoder that supports WebRTC optimized for [OvenMediaEngine](https://github.com/AirenSoft/OvenMediaEngine), Sub-Second Latency Streaming Server. OvenLiveKit for Web relies on the browser's WebRTC API and wraps it to make it easy for you to broadcast WebRTC streams to OvenMediaEngine.
+OvenLiveKit for Web is a JavaScript-based Live Streaming Encoder that supports WebRTC optimized for [OvenMediaEngine](https://github.com/OvenMediaLabs/OvenMediaEngine), Sub-Second Latency Streaming Server. OvenLiveKit for Web relies on the browser's WebRTC API and wraps it to make it easy for you to broadcast WebRTC streams to OvenMediaEngine.
 
 ## Demo
 <img src="./assets/05_OvenSpace_230214.png" style="max-width: 100%; height: auto;">
 
-OvenSpace is a sub-second latency streaming demo service using [OvenMediaEngine](https://github.com/AirenSoft/OvenMediaEngine), [OvenPlayer](https://github.com/AirenSoft/OvenPlayer) and [OvenLiveKit](https://github.com/AirenSoft/OvenLiveKit-Web). You can experience OvenLiveKit in the **[OvenSpace Demo](https://space.ovenplayer.com/)** and see examples of how it can be applied in the [OvenSpace Repository](https://github.com/AirenSoft/OvenSpace).
+OvenSpace is a sub-second latency streaming demo service using [OvenMediaEngine](https://github.com/OvenMediaLabs/OvenMediaEngine), [OvenPlayer](https://github.com/OvenMediaLabs/OvenPlayer) and [OvenLiveKit](https://github.com/OvenMediaLabs/OvenLiveKit-Web). You can experience OvenLiveKit in the **[OvenSpace Demo](https://space.ovenplayer.com/)** and see examples of how it can be applied in the [OvenSpace Repository](https://github.com/OvenMediaLabs/OvenSpace).
 
 ## Features
 * Support WebRTC-HTTP ingestion protocol (WHIP) -Since 1.3.0
 * Streaming to OvenMediaEngine's WebRTC Provider.
-	* Implement [OvenMediaEngine's signaling protocol](https://airensoft.gitbook.io/ovenmediaengine/live-source/webrtc#custom-webrtc-producer)
+	* Implement [OvenMediaEngine's signaling protocol](https://ovenmedialabs.com/docs/ome/live-source/webrtc#custom-webrtc-producer)
 * Built-in Device, Screen Capture.
 * Set the Quality of the Input Stream.
 
@@ -57,7 +57,7 @@ ovenLivekit.getDisplayMedia().then(function () {
 You can see a quick demo in action by cloning the repository.
 1. Clone repository
 ```
-$ git clone https://github.com/AirenSoft/OvenLiveKit-Web.git
+$ git clone https://github.com/OvenMediaLabs/OvenLiveKit-Web.git
 ```
 ```
 $ cd OvenLiveKit-Web
@@ -316,7 +316,7 @@ ovenLivekit.getUserMedia().then(function () {
 ```
 #### `instance.startStreaming(connectionUrl, connectionConfig)`
 - parameters
-    - connectionUrl: The connection URL to OvenMediaEngine is explained [here](https://airensoft.gitbook.io/ovenmediaengine/live-source/webrtc#url-pattern).
+    - connectionUrl: The connection URL to OvenMediaEngine is explained [here](https://ovenmedialabs.com/docs/ome/live-source/webrtc#url-pattern).
     - connectionConfig: See [ConnectionConfig](#) details next.
 - When this API is called, the media stream starts to be streamed according to OvenMediaEngine's signaling protocol.
 
@@ -363,15 +363,15 @@ ovenLivekit.getUserMedia().then(function () {
 - Close peer connection and websocket associated with OvenMediaEngine.
 
 ## For more information
-* [AirenSoft Website](https://airensoft.com) 
-  * About OvenMediaEngine, OvenMediaEngine Enterprise, OvenVideo, AirenBlog and more
-* [OvenMediaEngine GitHub](https://github.com/AirenSoft/OvenMediaEngine)
+* [OvenMediaLabs Website](https://ovenmedialabs.com) 
+  * About OvenMediaEngine, OvenMediaEngine Enterprise, OvenVideo, OvenMediaLabs Blog and more
+* [OvenMediaEngine GitHub](https://github.com/OvenMediaLabs/OvenMediaEngine)
   * Sub-Second Latency Streaming Server with LLHLS and WebRTC
-* [OvenMediaEngine Getting Started](https://airensoft.gitbook.io/ovenmediaengine/)
+* [OvenMediaEngine Getting Started](https://ovenmedialabs.com/docs/ome/)
   * User guide for OvenMediaEngine Configuration, ABR, Clustering, and more
-* [OvenPlayer GitHub](https://github.com/AirenSoft/OvenPlayer)
+* [OvenPlayer GitHub](https://github.com/OvenMediaLabs/OvenPlayer)
   * JavaScript-based Player with LLHLS and WebRTC
-* [OvenPlayer Getting Started](https://airensoft.gitbook.io/ovenplayer)
+* [OvenPlayer Getting Started](https://ovenmedialabs.com/docs/ovenplayer)
   * User guide for OvenPlayer UI Customize, API Reference, Examples, and more
 * [OvenSpace Demo](https://space.ovenplayer.com/)
   * Sub-Second Latency Streaming Demo Service
@@ -379,11 +379,11 @@ ovenLivekit.getUserMedia().then(function () {
 ## License
 OvenLiveKit for Web is licensed under the [MIT](./LICENSE) license.
 
-## About AirenSoft
-AirenSoft aims to make it easier for you to build a stable broadcasting/streaming service with Sub-Second Latency.
+## About OvenMediaLabs
+OvenMediaLabs aims to make it easier for you to build a stable broadcasting/streaming service with Sub-Second Latency.
 Therefore, we will continue developing and providing the most optimized tools for smooth Sub-Second Latency Streaming.
 
 Would you please click on each link below for details:
-* ["JavaScript-based Live Streaming Encoder" **OvenLiveKit**](https://github.com/AirenSoft/OvenLiveKit-Web)
-* ["Sub-Second Latency Streaming Server with LLHLS and WebRTC" **OvenMediaEngine**](https://github.com/AirenSoft/OvenMediaEngine)
-* ["JavaScript-based Player with LLHLS and WebRTC" **OvenPlayer**](https://github.com/AirenSoft/OvenPlayer)
+* ["JavaScript-based Live Streaming Encoder" **OvenLiveKit**](https://github.com/OvenMediaLabs/OvenLiveKit-Web)
+* ["Sub-Second Latency Streaming Server with LLHLS and WebRTC" **OvenMediaEngine**](https://github.com/OvenMediaLabs/OvenMediaEngine)
+* ["JavaScript-based Player with LLHLS and WebRTC" **OvenPlayer**](https://github.com/OvenMediaLabs/OvenPlayer)

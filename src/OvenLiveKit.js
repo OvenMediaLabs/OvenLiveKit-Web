@@ -1,6 +1,6 @@
 const OvenLiveKit = {};
 
-const version = '1.5.6';
+const version = '1.5.7';
 const logHeader = 'OvenLiveKit.js :';
 const logEventHeader = 'OvenLiveKit.js ====';
 
@@ -604,7 +604,7 @@ function addMethod(instance) {
     }
 
     const offer = await peerConnection.createOffer();
-    console.log(logHeader, 'Offer SDP: ', offer.sdp);
+    console.log(logHeader, 'Offer SDP from browser: ', offer.sdp);
 
     if (instance.connectionConfig.sdp && instance.connectionConfig.sdp.appendFmtp) {
       offer.sdp = appendFmtp(offer.sdp);
@@ -621,46 +621,81 @@ function addMethod(instance) {
       "Content-Type": "application/sdp"
     };
 
-    // Set Oven-Capabilities header if not over two simulcast layers.
-    if (!instance.connectionConfig.simulcast || instance.connectionConfig.simulcast.length < 2) {
+    // Set Oven-Capabilities header based on video track settings and simulcast layers.
+    const videoTracks = instance.inputStream.getVideoTracks();
 
-      const videoTracks = instance.inputStream.getVideoTracks();
+    if (videoTracks && videoTracks.length === 1) {
 
-      if (videoTracks && videoTracks.length === 1) {
+      const track = videoTracks[0];
+      const settings = track.getSettings();
 
-        for (let i = 0; i < videoTracks.length; i++) {
+      console.log(logHeader, 'Video track settings for Oven-Capabilities:', settings);
 
-          const track = videoTracks[i];
-          const settings = track.getSettings();
+      const width = settings.width;
+      const height = settings.height;
+      const frameRate = settings.frameRate;
 
-          console.log(logHeader, 'Video track settings for Oven-Capabilities:', settings);
+      const simulcastConfig = instance.connectionConfig.simulcast;
+      const layerCount = simulcastConfig ? simulcastConfig.length : 0;
 
-          const width = settings.width;
-          const height = settings.height;
-          const framerate = settings.frameRate;
+      if (layerCount >= 2) {
 
-          if (typeof width === 'number' && typeof height === 'number') {
-            console.log(logHeader, `Setting Oven-Capabilities header: max_width=${width}, max_height=${height}, max_fps=${normalizeFrameRate(framerate)}`);
-            headers['Oven-Capabilities'] = `max_width=${width}, max_height=${height}, max_fps=${normalizeFrameRate(framerate)}`;
+        const parts = [];
+
+        for (let i = 0; i < layerCount; i++) {
+
+          const layer = simulcastConfig[i] || {};
+          const rid = layer.rid !== undefined ? layer.rid : i;
+
+          const scale = parseFloat(layer.scaleResolutionDownBy);
+
+          if (!isNaN(scale) && scale > 0 && typeof width === 'number' && typeof height === 'number') {
+            const scaledWidth = Math.floor(Math.floor(width / scale) / 2) * 2;
+            const scaledHeight = Math.floor(Math.floor(height / scale) / 2) * 2;
+
+            parts.push(`rid:${rid}:max_width=${scaledWidth}`);
+            parts.push(`rid:${rid}:max_height=${scaledHeight}`);
           }
+
+          if (frameRate) {
+            parts.push(`rid:${rid}:max_fps=${normalizeFrameRate(frameRate)}`);
+          }
+        }
+
+        if (parts.length > 0) {
+          console.log(logHeader, `Setting Oven-Capabilities header: ${parts.join(', ')}`);
+          headers['Oven-Capabilities'] = parts.join(', ');
         }
       } else {
 
-        if (!videoTracks || videoTracks.length === 0) {
-          console.log(logHeader, 'No video tracks found, skipping Oven-Capabilities header.');
-        }
+        if (typeof width === 'number' && typeof height === 'number') {
 
-        if (videoTracks && videoTracks.length > 1) {
-          console.log(logHeader, `Multiple (${videoTracks.length}) video tracks found, skipping Oven-Capabilities header.`);
+          const parts = [`max_width=${width}`, `max_height=${height}`];
+
+          if (frameRate) {
+            parts.push(`max_fps=${normalizeFrameRate(frameRate)}`);
+          }
+
+          console.log(logHeader, `Setting Oven-Capabilities header: ${parts.join(', ')}`);
+          headers['Oven-Capabilities'] = parts.join(', ');
         }
       }
     } else {
-      console.log(logHeader, 'Over two simulcast layers are set, skipping Oven-Capabilities header.');
+
+      if (!videoTracks || videoTracks.length === 0) {
+        console.log(logHeader, 'No video tracks found, skipping Oven-Capabilities header.');
+      }
+
+      if (videoTracks && videoTracks.length > 1) {
+        console.log(logHeader, `Multiple (${videoTracks.length}) video tracks found, skipping Oven-Capabilities header.`);
+      }
     }
 
     if (instance.connectionConfig.httpHeaders) {
       Object.assign(headers, instance.connectionConfig.httpHeaders);
     }
+
+    console.log(logHeader, 'Offer SDP modified by OvenLiveKit: ', offer.sdp);
 
     const fetched = await fetchWithRedirect(endpointUrl, {
       method: "POST",

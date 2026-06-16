@@ -1,6 +1,6 @@
 const OvenLiveKit = {};
 
-const version = '1.5.7';
+const version = '1.5.8';
 const logHeader = 'OvenLiveKit.js :';
 const logEventHeader = 'OvenLiveKit.js ====';
 
@@ -544,6 +544,11 @@ function addMethod(instance) {
           const layer = {
             rid: i,
             active: true,
+            // VP9/AV1 simulcast in Chrome requires an explicit scalabilityMode together with
+            // scaleResolutionDownBy; without it, multiple encodings fall back to legacy SVC and
+            // extra rids are dropped. Default to L1T1 (overridable via simulcastConfig[i]).
+            // Multiple active encodings only allow L1T1/L1T2/L1T3 and all layers must share the same value.
+            scalabilityMode: 'L1T1',
             ...simulcastConfig[i]
           };
 
